@@ -160,11 +160,11 @@ def register_melty_blood_bot_jobs(job_manager, bot):
 if __name__ == "__main__":
     try:
         os.chdir(os.path.dirname(sys.argv[0]) or '.')
-        logger.debug('Start melty_blood_bot.py cwd={}'.format(os.getcwd()))
+        logger.info('Start melty_blood_bot.py cwd={}'.format(os.getcwd()))
 
         main(sys.argv[1:])
 
-        logger.debug('End melty_blood_bot.py')
+        logger.info('End melty_blood_bot.py')
         logger.info('-' * 80)
     except:
         logger.exception('Unhandled exception')

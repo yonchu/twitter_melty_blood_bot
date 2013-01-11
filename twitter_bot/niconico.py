@@ -251,7 +251,7 @@ class NicoSearch(object):
 
     def _fetch(self, func, *args, **kwargs):
         """Run func(*args, **kwargs) with retry."""
-        logger.info('Fetch from NicoNico: {}({}, {})'
+        logger.debug('Fetch from NicoNico: {}({}, {})'
                     .format(func.__name__, args, kwargs))
         remaining_retry_count = self.max_retry_count
         while(remaining_retry_count >= 0):
