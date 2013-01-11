@@ -1,0 +1,10 @@
+/config/bot.cfg
+*.db
+*.log
+
+# python
+*.pyc
+*.egg
+*.egg-info
+dist
+build
