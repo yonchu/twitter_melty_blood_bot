@@ -26,7 +26,6 @@ LOG_CONFIG = 'config/log.cfg'
 BOT_CONFIG = 'config/bot.cfg'
 
 # Initialize logger.
-logging.config.fileConfig(LOG_CONFIG)
 logger = logging.getLogger('app')
 
 
@@ -160,6 +159,8 @@ def register_melty_blood_bot_jobs(job_manager, bot):
 if __name__ == "__main__":
     try:
         os.chdir(os.path.dirname(sys.argv[0]) or '.')
+        logging.config.fileConfig(LOG_CONFIG)
+
         logger.info('Start melty_blood_bot.py cwd={}'.format(os.getcwd()))
 
         main(sys.argv[1:])
