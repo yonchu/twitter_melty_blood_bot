@@ -164,9 +164,9 @@ if __name__ == "__main__":
         logger.info('Start melty_blood_bot.py cwd={}'.format(os.getcwd()))
 
         main(sys.argv[1:])
-
-        logger.info('End melty_blood_bot.py')
-        logger.info('-' * 80)
     except:
         logger.exception('Unhandled exception')
         raise
+    finally:
+        logger.info('End melty_blood_bot.py')
+        logger.info('-' * 80)
