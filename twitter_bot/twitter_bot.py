@@ -103,6 +103,7 @@ class JobManager(DbManager):
             try:
                 self._run_job(*func)
             except Exception as e:
+                logger.exception('Jobs failed: func={}'.format(func))
                 failed_funcs.append((e, func))
 
         if failed_funcs:
@@ -174,6 +175,7 @@ class TwitterBotBase(object):
             try:
                 self.tweet_msg(msg)
             except Exception as e:
+                logger.exception('Tweet failed msg={}'.format(msg))
                 failed_tweet.append((e, msg))
             finally:
                 time.sleep(sleep_time_sec)
