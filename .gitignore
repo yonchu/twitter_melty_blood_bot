@@ -2,6 +2,8 @@
 *.db
 *.log
 
+/run_melty_blood_bot.lock
+
 # python
 *.pyc
 *.egg
