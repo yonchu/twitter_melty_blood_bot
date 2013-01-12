@@ -1,0 +1,137 @@
+#!/bin/bash
+#
+# Start up script.
+#
+# About trap:
+#   Usage:
+#     trap <'command'> <Signal-list>
+#   Signal:
+#     0  EXIT  Own exit signal.
+#     1  HUP   Hang up (to reboot).
+#     2  INT   Interrupt (Ctrl+c).
+#     3  QUIT  Quit signal (create coredump).
+#     9  KILL  Force quit (non-catchable, non-ignorable kill).
+#     15 TERM  Default (software termination signal).
+#     18 CONT  Continue.
+#     19 STOP  Suspend.
+#     20 TSTP  Suspend (Ctrl+Z).
+
+CPID=$$
+CWD=$(cd "$(dirname "$0")" && pwd)
+PROG=$(basename "$0")
+LOCKFILE="$CWD/$PROG".lock
+
+#PNAME_FOR_PGREP=$0
+PNAME_FOR_PGREP="$0 start"
+#PNAME_FOR_PGREP="$0 $*"
+
+start() {
+    "$CWD/melty_blood_bot.py" "$@"
+}
+
+stop() {
+    # Check status.
+    status && return 0
+
+    local pid
+    pid=$(get_pid)
+    get_pid_ret=$?
+    if [ $get_pid_ret -eq 0 -a -n "$pid" ]; then
+        echo "kill $pid"
+        kill $pid
+    fi
+    return $?
+}
+
+# See if the process is already running.
+status() {
+    # Check lock file.
+    local ret=1
+    local pid
+    local get_pid_ret
+    pid=$(get_pid)
+    get_pid_ret=$?
+    if [ $get_pid_ret -ne 0 ]; then
+        echo "Lock file exists but pid is not found." 2> /dev/null
+    elif [ -n "$pid" ]; then
+        if (ps -e | awk '{print $1}' | grep "$pid" >/dev/null); then
+            echo "The process($pid) is already running." 1>&2
+        else
+            echo "The process is not running but lockfile($pid) exists." 1>&2
+            echo "Lock file: $LOCKFILE" 1>&2
+        fi
+    else
+        ret=0
+    fi
+
+    if type pgrep > /dev/null 2>&1; then
+        local pid_list
+        pid_list=$(pgrep -fl "$PNAME_FOR_PGREP")
+        pid_list=$(echo "$pid_list" | grep -v "^ *$CPID ")
+        if [ -n "$pid" ]; then
+            pid_list=$(echo "$pid_list" | grep -v "^ *$pid ")
+        fi
+        if [ -n "$pid_list" ]; then
+            echo "The following process is running:" 1>&2
+            echo "$pid_list" 1>&2
+        fi
+    fi
+
+    if [ "$ret" -eq 0 -a -z "$pid_list" ]; then
+        echo "The process is not running."
+        return 0
+    fi
+    return 1
+}
+
+get_pid() {
+    if [ -e "$LOCKFILE" ]; then
+        local pid
+        pid=$(cat "$LOCKFILE")
+        [ -z "$pid" ] && return 1
+        echo "$pid"
+    fi
+    return 0
+}
+
+cleanup() {
+    #echo "rm -f $LOCKFILE"
+    rm -f "$LOCKFILE"
+}
+
+
+# See how we were called.
+RET=0
+ARG1=$1
+shift
+case "$ARG1" in
+    start)
+        # Check status.
+        status > /dev/null || { echo "Could not run the process!!" 1>&2; exit 1; }
+
+        # Setup trap.
+        trap 'echo "...Traped." 1>&2; cleanup; exit 1;' 1 2 3 15
+        # Create lock file.
+        echo "$CPID" > "${LOCKFILE}"
+
+        start "$@" || RET=1
+
+        # Clean up.
+        cleanup || RET=1
+        ;;
+    stop)
+        stop || RET=1
+        ;;
+    status)
+        status || RET=1
+        ;;
+    restart)
+        stop && start || RET=1
+        ;;
+    *)
+      echo $"Usage: $PROG [start|stop|status]"
+      RET=1
+esac
+
+exit $RET
+
