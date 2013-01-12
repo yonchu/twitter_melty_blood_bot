@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/share:/bin:/usr/bin
+MAILTO=yonchu
+
+05  00,04,16,21  *  *  * /home/bot/work/cron/twitter_melty_blood_bot/run_melty_blood_bot | logger -t melty_blood_bot -p local0.info
