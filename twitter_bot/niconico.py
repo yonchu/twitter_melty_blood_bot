@@ -123,7 +123,7 @@ class NicoSearch(object):
 
     def tweet_msgs_for_latest_comments(self, keyword, from_datetime,
                                        max_comment_num=1500,
-                                       max_tweet_num_per_video=1):
+                                       max_tweet_num_per_video=3):
         tweet_msgs = []
         # Search latest comments by NicoNico.
         videos = self.search_videos_with_comments(keyword, from_datetime,
