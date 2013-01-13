@@ -23,7 +23,6 @@ ceanweb : Twitter API : Twitter ボットを作る (4)
 http://blog.livedoor.jp/oceanweb/archives/14903752.html
 
 https://dev.twitter.com/apps
-https://dev.twitter.com/apps/3847359/
 http://talkfast.org/2010/05/31/twitter-from-the-command-line-in-python-using-oauth/
 http://packages.python.org/tweepy/html/index.html
 http://watcher.moe-nifty.com/memo/docs/twitterAPI.txt
