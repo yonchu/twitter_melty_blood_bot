@@ -76,7 +76,7 @@ status() {
         fi
     fi
 
-    # Check the process with pgrep.
+    # Check other process with pgrep.
     if type pgrep > /dev/null 2>&1; then
         local pid_list
         pid_list=$(pgrep -fl "$PNAME_FOR_PGREP")
@@ -85,14 +85,14 @@ status() {
             pid_list=$(echo "$pid_list" | grep -v "^ *$pid ")
         fi
         if [ -n "$pid_list" ]; then
-            echo "Check other process..." 1>&2
-            echo "The following process is running:" 1>&2
-            echo "$pid_list" 1>&2
+            echo "*** WARNIGN ***"
+            echo "Other process is running (current pid=$CPID):"
+            echo "$pid_list"
         fi
     fi
 
     # Check the result.
-    if [ ! -e "$LOCKFILE" -a ! -e "$PIDFILE" -a -z "$pid_list" ]; then
+    if [ ! -e "$LOCKFILE" -a ! -e "$PIDFILE" ]; then
         echo "The process is not running."
         return 0
     fi
