@@ -3,6 +3,7 @@
 *.log
 
 /run_melty_blood_bot.lock
+/run_melty_blood_bot.pid
 
 # python
 *.pyc
