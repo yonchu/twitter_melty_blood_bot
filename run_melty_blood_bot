@@ -27,7 +27,7 @@ PROG=$(basename "$0")
 LOCKFILE="$CWD/$PROG".lock
 PIDFILE="$CWD/$PROG".pid
 
-PNAME_FOR_PGREP="$0 start"
+PNAME_FOR_PGREP="$PROG start"
 
 start() {
     "$CWD/melty_blood_bot.py" "$@"
