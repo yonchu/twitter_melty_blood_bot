@@ -30,9 +30,7 @@ PIDFILE="$CWD/$PROG".pid
 PNAME_FOR_PGREP="$0 start"
 
 start() {
-    echo 'Start'
-    sleep 60
-    #"$CWD/melty_blood_bot.py" "$@"
+    "$CWD/melty_blood_bot.py" "$@"
 }
 
 stop() {
