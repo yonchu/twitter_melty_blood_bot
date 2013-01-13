@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # Start up script.
+#   Usage:
+#     run_melty_blood_bot <start|stop|status>
 #
 # About lockfile:
 #   Usage:
@@ -149,7 +151,7 @@ case "$ARG1" in
         stop && start || RET=1
         ;;
     *)
-      echo $"Usage: $PROG [start|stop|status]"
+      echo $"Usage: $PROG <start|stop|status>"
       RET=1
 esac
 
