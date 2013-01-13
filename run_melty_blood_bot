@@ -2,6 +2,11 @@
 #
 # Start up script.
 #
+# About lockfile:
+#   Usage:
+#     lockfile -sleeptime | -r retries |
+#              -l locktimeout | -s suspend | -!  | -ml | -mu | filename ...
+#
 # About trap:
 #   Usage:
 #     trap <'command'> <Signal-list>
@@ -20,50 +25,58 @@ CPID=$$
 CWD=$(cd "$(dirname "$0")" && pwd)
 PROG=$(basename "$0")
 LOCKFILE="$CWD/$PROG".lock
+PIDFILE="$CWD/$PROG".pid
 
-#PNAME_FOR_PGREP=$0
 PNAME_FOR_PGREP="$0 start"
-#PNAME_FOR_PGREP="$0 $*"
 
 start() {
-    "$CWD/melty_blood_bot.py" "$@"
+    echo 'Start'
+    sleep 60
+    #"$CWD/melty_blood_bot.py" "$@"
 }
 
 stop() {
     # Check status.
     status && return 0
 
+    # Get pid.
     local pid
-    pid=$(get_pid)
-    get_pid_ret=$?
-    if [ $get_pid_ret -eq 0 -a -n "$pid" ]; then
-        echo "kill $pid"
-        kill $pid
+    if [ -e "$PIDFILE" ]; then
+        pid=$(cat "$PIDFILE")
     fi
-    return $?
+
+    # Kill the process.
+    if [ -n "$pid" ]; then
+        echo "kill $pid"
+        kill $pid && return 0
+    fi
+    return 1
 }
 
 # See if the process is already running.
 status() {
     # Check lock file.
-    local ret=1
-    local pid
-    local get_pid_ret
-    pid=$(get_pid)
-    get_pid_ret=$?
-    if [ $get_pid_ret -ne 0 ]; then
-        echo "Lock file exists but pid is not found." 2> /dev/null
-    elif [ -n "$pid" ]; then
-        if (ps -e | awk '{print $1}' | grep "$pid" >/dev/null); then
-            echo "The process($pid) is already running." 1>&2
-        else
-            echo "The process is not running but lockfile($pid) exists." 1>&2
-            echo "Lock file: $LOCKFILE" 1>&2
-        fi
-    else
-        ret=0
+    if [ -e "$LOCKFILE" ]; then
+        echo "Lock file exists: $LOCKFILE" 1>&2
     fi
 
+    # Check pid file.
+    local pid
+    if [ -e "$PIDFILE" ]; then
+        pid=$(cat "$PIDFILE")
+        echo "Pid file exists (pid=$pid): $PIDFILE" 1>&2
+        if [ -n "$pid" ]; then
+            if (ps -e | awk '{print $1}' | grep "$pid" >/dev/null); then
+                echo "The process(pid=$pid) is already running." 1>&2
+            else
+                echo "The process(pid=$pid) is not running." 1>&2
+            fi
+        else
+            echo "Pid is not found in pid file." 1>&2
+        fi
+    fi
+
+    # Check the process with pgrep.
     if type pgrep > /dev/null 2>&1; then
         local pid_list
         pid_list=$(pgrep -fl "$PNAME_FOR_PGREP")
@@ -72,31 +85,39 @@ status() {
             pid_list=$(echo "$pid_list" | grep -v "^ *$pid ")
         fi
         if [ -n "$pid_list" ]; then
+            echo "Check other process..." 1>&2
             echo "The following process is running:" 1>&2
             echo "$pid_list" 1>&2
         fi
     fi
 
-    if [ "$ret" -eq 0 -a -z "$pid_list" ]; then
+    # Check the result.
+    if [ ! -e "$LOCKFILE" -a ! -e "$PIDFILE" -a -z "$pid_list" ]; then
         echo "The process is not running."
         return 0
     fi
     return 1
 }
 
-get_pid() {
-    if [ -e "$LOCKFILE" ]; then
-        local pid
-        pid=$(cat "$LOCKFILE")
-        [ -z "$pid" ] && return 1
-        echo "$pid"
+create_lock_pid_file() {
+    # Check status.
+    status > /dev/null || return 1
+
+    # Create lock file.
+    if type lockfile > /dev/null 2>&1; then
+        lockfile -r 0 $LOCKFILE || return 1
+    else
+        touch "$LOCKFILE" || return 1
     fi
+
+    # Create pid file.
+    echo "$CPID" > "$PIDFILE"
     return 0
 }
 
 cleanup() {
-    #echo "rm -f $LOCKFILE"
     rm -f "$LOCKFILE"
+    rm -f "$PIDFILE"
 }
 
 
@@ -106,13 +127,14 @@ ARG1=$1
 shift
 case "$ARG1" in
     start)
-        # Check status.
-        status > /dev/null || { echo "Could not run the process!!" 1>&2; exit 1; }
-
+        # Create lock file.
+        create_lock_pid_file
+        if [ $? -ne 0 ] ; then
+            echo 'Could not run the process!!' 1>&2
+            exit 1
+        fi
         # Setup trap.
         trap 'echo "...Traped." 1>&2; cleanup; exit 1;' 1 2 3 15
-        # Create lock file.
-        echo "$CPID" > "${LOCKFILE}"
 
         start "$@" || RET=1
 
