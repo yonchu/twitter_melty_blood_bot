@@ -167,7 +167,7 @@ class TwitterBotBase(object):
 
     def tweet_msgs(self, msgs, sleep_time_sec=1):
         if not msgs:
-            logger.info('No tweet messages')
+            logger.debug('No tweet messages')
             return
         # [(Exception, tweet), ]
         failed_tweet = []

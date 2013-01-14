@@ -49,6 +49,8 @@ class MeltyBloodBot(TwitterBotBase):
         nico.login()
         tweet_msgs = nico.tweet_msgs_for_latest_videos(self.search_keyword,
                                                        prev_datetime)
+        if not tweet_msgs:
+            logger.info('nico_video_post(): No tweet messages')
         self.tweet_msgs(tweet_msgs)
 
     def nico_comment_post(self, prev_datetime):
@@ -56,12 +58,16 @@ class MeltyBloodBot(TwitterBotBase):
         nico.login()
         tweet_msgs = nico.tweet_msgs_for_latest_comments(self.search_keyword,
                                                          prev_datetime)
+        if not tweet_msgs:
+            logger.info('nico_comment_post(): No tweet messages')
         self.tweet_msgs(tweet_msgs)
 
     def youtube_video_post(self, prev_datetime):
         youtube = YoutubeSearch(self.youtube_developer_key)
         tweet_msgs = youtube.tweet_msgs_for_latest_videos(self.search_keyword,
                                                           prev_datetime)
+        if not tweet_msgs:
+            logger.info('youtube_video_post(): No tweet messages')
         self.tweet_msgs(tweet_msgs)
 
 
