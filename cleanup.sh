@@ -1,8 +1,7 @@
 #!/bin/sh
 cwd=$(cd "$(dirname "d0")" && pwd)
 
-list=(app.log
-      sample_bot.db
+list=(sample_bot.db
       twitter_bot.egg-info
       dist
       build)
