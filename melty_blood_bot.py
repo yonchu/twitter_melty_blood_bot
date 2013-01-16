@@ -167,7 +167,8 @@ if __name__ == "__main__":
         os.chdir(os.path.dirname(sys.argv[0]) or '.')
         logging.config.fileConfig(LOG_CONFIG)
 
-        logger.info('Start melty_blood_bot.py cwd={}'.format(os.getcwd()))
+        logger.info('Start melty_blood_bot.py argv={}, cwd={}'
+                    .format(sys.argv[1:], os.getcwd()))
 
         main(sys.argv[1:])
     except:
