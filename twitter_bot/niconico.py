@@ -91,7 +91,7 @@ class NicoSearch(object):
     TW_COMMENT_TWEET_FORMAT = '[コメント]{} ({})[{}] | {} {}'.decode('utf-8')
 
     def __init__(self, user_id, pass_word, max_fetch_count=1,
-                 fetch_sleep_sec=1, max_retry_count=2, retry_sleep_sec=10):
+                 fetch_sleep_sec=1, max_retry_count=3, retry_sleep_sec=15):
         self.user_id = user_id
         self.pass_word = pass_word
         self.max_fetch_count = max_fetch_count
