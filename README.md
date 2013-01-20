@@ -6,11 +6,13 @@ Bot account: [@melty_blood_bot](https://twitter.com/melty_blood_bot)
 Installation
 ---------------------
 
-Download the source from http://github.com/yonchu/twitter_melty_blood_bot
+Clone from http://github.com/yonchu/twitter_melty_blood_bot
 and install it with::
 
 ```console
-python setup.py install
+$ git clone git://github.com/yonchu/twitter_bot.git
+$ git submodule update --init
+$ git submodule foreach "git checkout master"
 ```
 
 Usage
@@ -31,4 +33,8 @@ Initialize.
 $ ./melty_blood_bot.py init
 ```
 
-Run ``melty_blood_bot.py`` by cron.
+Run ``melty_blood_bot.py`` using run-script in cron.
+
+```
+run-script/run-script start ./melty_blood_bot.py
+```

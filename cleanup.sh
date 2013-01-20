@@ -1,10 +1,7 @@
 #!/bin/sh
 cwd=$(cd "$(dirname "d0")" && pwd)
 
-list=(sample_bot.db
-      twitter_bot.egg-info
-      dist
-      build)
+list=()
 
 for item in "${list[@]}"; do
     if [ -e $item ]; then
