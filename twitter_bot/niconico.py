@@ -6,6 +6,7 @@ import cookielib
 import datetime
 import json
 import logging
+import traceback
 import time
 import urllib
 import urllib2
@@ -91,13 +92,17 @@ class NicoSearch(object):
     TW_COMMENT_TWEET_FORMAT = '[コメント]{} ({})[{}] | {} {}'.decode('utf-8')
 
     def __init__(self, user_id, pass_word, max_fetch_count=1,
-                 fetch_sleep_sec=1, max_retry_count=3, retry_sleep_sec=15):
+                 fetch_sleep_sec=1, max_retry_count=3, retry_sleep_sec=15,
+                 max_fetch_fail_count=2):
         self.user_id = user_id
         self.pass_word = pass_word
         self.max_fetch_count = max_fetch_count
         self.fetch_sleep_sec = fetch_sleep_sec
         self.max_retry_count = max_retry_count
         self.retry_sleep_sec = retry_sleep_sec
+        self.max_fetch_fail_count = max_fetch_fail_count
+
+        self.fetch_fail_count = 0
 
     def login(self):
         opener = urllib2 \
@@ -174,7 +179,18 @@ class NicoSearch(object):
             if not (0 < video.num_res <= max_comment_num):
                 continue
             # Fetch comments from NicoNico.
-            result = self._fetch(self._fetch_comments, video)
+            try:
+                result = self._fetch(self._fetch_comments, video)
+            except:
+                if self.fetch_fail_count > self.max_fetch_fail_count:
+                    raise Exception("Fetch fail count over({})\n\n{}"
+                                    .format(self.fetch_fail_count,
+                                            traceback.format_exc()))
+                logger.exception('_fetch_comments() failed but continue')
+                sleep_sec = self.retry_sleep_sec * self.max_retry_count * 2
+                logger.info('Sleep {}sec...'.format(sleep_sec))
+                time.sleep(sleep_sec)
+                continue
 
             dom = xml.dom.minidom.parseString(result.read())
 
@@ -252,7 +268,8 @@ class NicoSearch(object):
     def _fetch(self, func, *args, **kwargs):
         """Run func(*args, **kwargs) with retry."""
         logger.debug('Fetch from NicoNico: {}({}, {})'
-                    .format(func.__name__, args, kwargs))
+                     .format(func.__name__, args, kwargs))
+
         remaining_retry_count = self.max_retry_count
         while(remaining_retry_count >= 0):
             try:
@@ -269,6 +286,7 @@ class NicoSearch(object):
                 break
             except Exception:
                 if remaining_retry_count <= 0:
+                    self.fetch_fail_count += 1
                     raise
                 remaining_retry_count -= 1
 
