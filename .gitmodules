@@ -1,3 +1,6 @@
 [submodule "run-script"]
 	path = run-script
 	url = git://github.com/yonchu/run-script.git
+[submodule "twitter_bot"]
+	path = twitter_bot
+	url = git://github.com/yonchu/twitter_bot.git
