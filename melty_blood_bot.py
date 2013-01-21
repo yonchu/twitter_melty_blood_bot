@@ -76,15 +76,14 @@ def main(argv):
     """main function"""
     # Read config.
     config = Config(BOT_CONFIG, section='melty_blood_bot')
-    screen_name = config.get_value('screen_name')
     consumer_key = config.get_value('consumer_key')
     consumer_secret = config.get_value('consumer_secret')
     access_token = config.get_value('access_token')
     access_token_secret = config.get_value('access_token_secret')
 
-    logger.debug('Read config file: ' + 'screen_name=' + screen_name)
+    logger.debug('Read config file: {}'.format(BOT_CONFIG))
 
-    with TwitterBot(screen_name, consumer_key, consumer_secret, access_token,
+    with TwitterBot(consumer_key, consumer_secret, access_token,
                     access_token_secret) as tw_bot:
         is_test = False
         if len(argv) >= 1:
@@ -101,7 +100,7 @@ def main(argv):
             else:
                 raise Exception('Unknow argument: argv={}'.format(argv))
 
-        with JobManager(tw_bot.db_name) as job_manager:
+        with JobManager() as job_manager:
             #register_twitter_bot_jobs(job_manager, tw_bot)
 
             mb_bot = MeltyBloodBot(consumer_key, consumer_secret, access_token,
