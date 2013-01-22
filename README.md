@@ -10,7 +10,7 @@ Clone from http://github.com/yonchu/twitter_melty_blood_bot
 and install it with::
 
 ```console
-$ git clone git://github.com/yonchu/twitter_bot.git
+$ git clone git://github.com/yonchu/twitter_melty_blood_bot.git
 $ git submodule update --init
 $ git submodule foreach "git checkout master"
 ```
