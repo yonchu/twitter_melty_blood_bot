@@ -7,8 +7,7 @@ import logging.config
 import os
 import sys
 
-from twitter_bot import (Config, NicoSearch, YoutubeSearch, TwitterBotBase,
-                         TwitterBot, JobManager)
+from twitter_bot import TwitterBot, TwitterVideoBot, JobManager
 
 # Set default encording.
 try:
@@ -29,67 +28,15 @@ BOT_CONFIG = 'config/bot.cfg'
 logger = logging.getLogger('app')
 
 
-class MeltyBloodBot(TwitterBotBase):
-    def __init__(self, consumer_key, consumer_secret,
-                 access_token, access_token_secret, search_keyword):
-        # Init TwitterBotBase.
-        TwitterBotBase.__init__(self, consumer_key, consumer_secret,
-                                access_token, access_token_secret)
-        self.search_keyword = search_keyword
-
-        # Read config.
-        config = Config(BOT_CONFIG)
-        self.nico_user_id = config.get_value('user_id', section='niconico')
-        self.nico_pass_word = config.get_value('pass_word', section='niconico')
-        self.youtube_developer_key = config.get_value('developer_key',
-                                                      section='youtube')
-
-    def nico_video_post(self, prev_datetime):
-        nico = NicoSearch(self.nico_user_id, self.nico_pass_word)
-        nico.login()
-        tweet_msgs = nico.tweet_msgs_for_latest_videos(self.search_keyword,
-                                                       prev_datetime)
-        if not tweet_msgs:
-            logger.info('nico_video_post(): No tweet messages')
-        self.tweet_msgs(tweet_msgs)
-
-    def nico_comment_post(self, prev_datetime):
-        nico = NicoSearch(self.nico_user_id, self.nico_pass_word)
-        nico.login()
-        tweet_msgs = nico.tweet_msgs_for_latest_comments(self.search_keyword,
-                                                         prev_datetime)
-        if not tweet_msgs:
-            logger.info('nico_comment_post(): No tweet messages')
-        self.tweet_msgs(tweet_msgs)
-
-    def youtube_video_post(self, prev_datetime):
-        youtube = YoutubeSearch(self.youtube_developer_key)
-        tweet_msgs = youtube.tweet_msgs_for_latest_videos(self.search_keyword,
-                                                          prev_datetime)
-        if not tweet_msgs:
-            logger.info('youtube_video_post(): No tweet messages')
-        self.tweet_msgs(tweet_msgs)
-
-
 ## Main
 def main(argv):
     """main function"""
-    # Read config.
-    config = Config(BOT_CONFIG, section='melty_blood_bot')
-    consumer_key = config.get_value('consumer_key')
-    consumer_secret = config.get_value('consumer_secret')
-    access_token = config.get_value('access_token')
-    access_token_secret = config.get_value('access_token_secret')
-
-    logger.debug('Read config file: {}'.format(BOT_CONFIG))
-
-    with TwitterBot(consumer_key, consumer_secret, access_token,
-                    access_token_secret) as tw_bot:
+    with TwitterBot(BOT_CONFIG) as tw_bot:
         is_test = False
         if len(argv) >= 1:
             if argv[0] == 'test':
                 is_test = True
-                tw_bot.test = is_test
+                tw_bot.is_test = is_test
             elif argv[0] == 'init':
                 # Initialize database.
                 tw_bot.create_database()
@@ -103,10 +50,9 @@ def main(argv):
         with JobManager() as job_manager:
             #register_twitter_bot_jobs(job_manager, tw_bot)
 
-            mb_bot = MeltyBloodBot(consumer_key, consumer_secret, access_token,
-                                   access_token_secret, SEARCH_WORD)
-            mb_bot.test = is_test
-            register_melty_blood_bot_jobs(job_manager, mb_bot)
+            video_bot = TwitterVideoBot(BOT_CONFIG)
+            video_bot.is_test = is_test
+            register_twitter_video_bot_jobs(job_manager, video_bot)
 
             # Run jobs.
             job_manager.run()
@@ -132,28 +78,28 @@ def register_twitter_bot_jobs(job_manager, bot):
     job_manager.register_jobs(bot, func_and_intervals)
 
 
-def register_melty_blood_bot_jobs(job_manager, bot):
+def register_twitter_video_bot_jobs(job_manager, bot):
     # Make func_and_intervals.
     func_and_intervals = []
 
     prev_datetime = job_manager \
-        .get_job_called_datetime(MeltyBloodBot.__name__,
-                                 MeltyBloodBot.nico_comment_post.__name__)
-    func_tuple = (MeltyBloodBot.nico_comment_post, [prev_datetime],
+        .get_job_called_datetime(TwitterVideoBot.__name__,
+                                 TwitterVideoBot.nico_comment_post.__name__)
+    func_tuple = (TwitterVideoBot.nico_comment_post, [SEARCH_WORD, prev_datetime],
                   None, 1.1 * 60)
     func_and_intervals.append(func_tuple)
 
     prev_datetime = job_manager \
-        .get_job_called_datetime(MeltyBloodBot.__name__,
-                                 MeltyBloodBot.youtube_video_post.__name__)
-    func_tuple = (MeltyBloodBot.youtube_video_post, [prev_datetime],
+        .get_job_called_datetime(TwitterVideoBot.__name__,
+                                 TwitterVideoBot.youtube_video_post.__name__)
+    func_tuple = (TwitterVideoBot.youtube_video_post, [SEARCH_WORD, prev_datetime],
                   None, 1.3 * 60)
     func_and_intervals.append(func_tuple)
 
     prev_datetime = job_manager \
-        .get_job_called_datetime(MeltyBloodBot.__name__,
-                                 MeltyBloodBot.nico_video_post.__name__)
-    func_tuple = (MeltyBloodBot.nico_video_post, [prev_datetime],
+        .get_job_called_datetime(TwitterVideoBot.__name__,
+                                 TwitterVideoBot.nico_video_post.__name__)
+    func_tuple = (TwitterVideoBot.nico_video_post, [SEARCH_WORD, prev_datetime],
                   None, 1.5 * 60)
     func_and_intervals.append(func_tuple)
 
