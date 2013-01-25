@@ -8,6 +8,8 @@ import os
 import sys
 
 from twitter_bot import TwitterBot, TwitterVideoBot, JobManager
+import define
+
 
 # Set default encording.
 try:
@@ -85,27 +87,33 @@ def register_twitter_video_bot_jobs(job_manager, bot):
     prev_datetime = job_manager \
         .get_job_called_datetime(TwitterVideoBot.__name__,
                                  TwitterVideoBot.nico_comment_post.__name__)
-    func_tuple = (TwitterVideoBot.nico_comment_post, [SEARCH_WORD, prev_datetime],
-                  None, 1.1 * 60)
+    func_tuple = (TwitterVideoBot.nico_comment_post,
+                  [SEARCH_WORD, prev_datetime, filter_func_for_nico_comment_post],
+                  None, 1.1 * 30)
     func_and_intervals.append(func_tuple)
 
     prev_datetime = job_manager \
         .get_job_called_datetime(TwitterVideoBot.__name__,
                                  TwitterVideoBot.youtube_video_post.__name__)
     func_tuple = (TwitterVideoBot.youtube_video_post, [SEARCH_WORD, prev_datetime],
-                  None, 1.3 * 60)
+                  None, 1.3 * 30)
     func_and_intervals.append(func_tuple)
 
     prev_datetime = job_manager \
         .get_job_called_datetime(TwitterVideoBot.__name__,
                                  TwitterVideoBot.nico_video_post.__name__)
     func_tuple = (TwitterVideoBot.nico_video_post, [SEARCH_WORD, prev_datetime],
-                  None, 1.5 * 60)
+                  None, 1.5 * 30)
     func_and_intervals.append(func_tuple)
 
     # Register.
     job_manager.register_jobs(bot, func_and_intervals)
 
+
+def filter_func_for_nico_comment_post(video):
+    if video.id in define.NG_ID:
+        return True
+    return False
 
 if __name__ == "__main__":
     try:
