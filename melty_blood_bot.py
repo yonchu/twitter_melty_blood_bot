@@ -88,8 +88,8 @@ def register_twitter_video_bot_jobs(job_manager, bot):
         .get_job_called_datetime(TwitterVideoBot.__name__,
                                  TwitterVideoBot.nico_comment_post.__name__)
     func_tuple = (TwitterVideoBot.nico_comment_post,
-                  [SEARCH_WORD, prev_datetime, filter_func_for_nico_comment_post],
-                  None, 1.1 * 30)
+                  [SEARCH_WORD, prev_datetime],
+                  {'filter_func': filter_func_for_nico_comment_post}, 1.1 * 30)
     func_and_intervals.append(func_tuple)
 
     prev_datetime = job_manager \
