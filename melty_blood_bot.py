@@ -21,6 +21,7 @@ except ImportError:
     pass
 
 SEARCH_WORD = 'mbaacc'
+SEARCH_WORD_YOUTUBE = 'mbaacc OR mbaa'
 
 # Config.
 LOG_CONFIG = 'config/log.cfg'
@@ -95,7 +96,7 @@ def register_twitter_video_bot_jobs(job_manager, bot):
     prev_datetime = job_manager \
         .get_job_called_datetime(TwitterVideoBot.__name__,
                                  TwitterVideoBot.youtube_video_post.__name__)
-    func_tuple = (TwitterVideoBot.youtube_video_post, [SEARCH_WORD, prev_datetime],
+    func_tuple = (TwitterVideoBot.youtube_video_post, [SEARCH_WORD_YOUTUBE, prev_datetime],
                   None, 1.3 * 30)
     func_and_intervals.append(func_tuple)
 
